@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso - BateBola Esportes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('batebola_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const meta = document.getElementById('meta-theme-color');
+                    if (meta) meta.setAttribute('content', '#0b0f19');
+                }
+            } catch(e) {}
+        })();
+    </script>
+</head>
+<body class="login-body">
+
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button class="menu-toggle"><i class="fa-solid fa-xmark"></i></button>
+      <a href="index.html" class="nav-icon" title="Início"><i class="fa-solid fa-house"></i></a>
+      <a href="partidas.html" class="nav-icon" title="Partidas"><i class="fa-solid fa-futbol"></i></a>
+      <a href="historico.html" class="nav-icon" title="Histórico"><i class="fa-regular fa-clock"></i></a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <hr class="divider" />
+            <button class="nav-icon theme-toggle-btn" id="theme-toggle-sidebar" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                <i class="fa-solid fa-moon icon-moon"></i>
+                <i class="fa-solid fa-sun icon-sun"></i>
+            </button>
+      <a href="login.html" class="nav-icon active" title="Perfil/Login"><i class="fa-regular fa-user"></i></a>
+      <a href="#" class="nav-icon" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    
+    <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="openSidebarBtn"><i class="fa-solid fa-bars"></i></button>
+            <a href="index.html" class="logo"><img src="/static/img/image 8.png" alt="Logo"></a>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle-btn" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                    <i class="fa-solid fa-moon icon-moon"></i>
+                    <i class="fa-solid fa-sun icon-sun"></i>
+                </button>
+            </div>
+        </header>
+
+    <div class="login-container">
+      <main class="login-content">
+        
+        <form id="form-login" class="login-form">
+          <h2 class="login-title">Login</h2>
+
+          <div class="input-group">
+            <input type="email" id="login-email" placeholder="e-mail" required />
+          </div>
+          <div class="input-group">
+            <input type="password" id="login-senha" placeholder="senha" required />
+          </div>
+          
+          <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+
+          <button type="submit" class="btn-primary">ENTRAR</button>
+
+          <p class="auth-switch-text">
+            Não tem uma conta? <a href="#" id="link-ir-cadastro">Cadastre-se</a>
+          </p>
+        </form>
+
+        <form id="form-cadastro" class="login-form" style="display: none;">
+          <h2 class="login-title">Criar Conta</h2>
+
+          <div class="input-group">
+            <input type="text" id="cad-nome" placeholder="nome completo" required />
+          </div>
+
+          <div class="input-group">
+            <input type="email" id="cad-email" placeholder="e-mail" required />
+          </div>
+
+          <div class="input-group">
+            <input type="text" id="cad-cidade" placeholder="cidade" required />
+          </div>
+
+          <div class="input-group">
+            <input type="password" id="cad-senha" placeholder="senha" required />
+          </div>
+
+          <button type="submit" class="btn-primary">CADASTRAR</button>
+
+          <p class="auth-switch-text">
+            Já tem uma conta? <a href="#" id="link-ir-login">Faça Login</a>
+          </p>
+        </form>
+
+      </main>
+
+      <div class="login-banner"></div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/script.js"></script>
+</body>
+</html>
