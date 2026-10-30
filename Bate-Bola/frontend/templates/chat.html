@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat da Partida - BateBola</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('batebola_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const meta = document.getElementById('meta-theme-color');
+                    if (meta) meta.setAttribute('content', '#0b0f19');
+                }
+            } catch(e) {}
+        })();
+    </script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <button class="menu-toggle"><i class="fa-solid fa-xmark"></i></button>
+            <a href="index.html" class="nav-icon" title="Início"><i class="fa-solid fa-house"></i></a>
+            <a href="partidas.html" class="nav-icon active" title="Partidas"><i class="fa-solid fa-futbol"></i></a>
+            <a href="historico.html" class="nav-icon" title="Histórico"><i class="fa-regular fa-clock"></i></a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <hr class="divider" />
+            <button class="nav-icon theme-toggle-btn" id="theme-toggle-sidebar" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                <i class="fa-solid fa-moon icon-moon"></i>
+                <i class="fa-solid fa-sun icon-sun"></i>
+            </button>
+            <a href="perfil.html" class="nav-icon" title="Perfil"><i class="fa-regular fa-user"></i></a>
+            <a href="#" class="nav-icon" id="btn-logout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
+    </aside>
+
+    <div class="main-content" style="height: 100vh; display: flex; flex-direction: column;">
+
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="btn-abrir-menu"><i class="fa-solid fa-bars"></i></button>
+            <a href="index.html" class="logo">
+                <img src="/static/img/image 8.png" alt="Logo">
+            </a>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle-btn" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                    <i class="fa-solid fa-moon icon-moon"></i>
+                    <i class="fa-solid fa-sun icon-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="chat-layout" style="flex: 1; overflow: hidden;">
+            
+            <main class="chat-main">
+                <header class="chat-header">
+                    <div class="title" id="chat-title">
+                        # <span id="nome-esporte">CARREGANDO...</span>
+                    </div>
+                    <div class="chat-header-actions">
+                        <i class="fa-solid fa-thumbtack" title="Fixados"></i>
+                        <i class="fa-solid fa-users" title="Participantes"></i>
+                    </div>
+                </header>
+
+                <div class="pinned-announcement" id="pinned-info">
+                    <i class="fa-solid fa-thumbtack"></i>
+                    <span id="pinned-text">Carregando horário...</span>
+                </div>
+
+                <div class="messages-container" id="messages-container"></div>
+
+                <form class="chat-input-area" id="form-chat">
+                    <input type="text" id="input-mensagem" placeholder="Digite uma mensagem..." autocomplete="off" required />
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </main>
+
+            <aside class="participants-sidebar" id="lista-participantes">
+                <p class="empty-participants">Carregando participantes...</p>
+            </aside>
+
+        </div>
+
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>

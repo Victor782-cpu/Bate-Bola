@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Partidas Disponíveis - BateBola</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('batebola_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const meta = document.getElementById('meta-theme-color');
+                    if (meta) meta.setAttribute('content', '#0b0f19');
+                }
+            } catch(e) {}
+        })();
+    </script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <button class="menu-toggle"><i class="fa-solid fa-xmark"></i></button>
+            <a href="index.html" class="nav-icon" title="Início"><i class="fa-solid fa-house"></i></a>
+            <a href="partidas.html" class="nav-icon active" title="Partidas"><i class="fa-solid fa-futbol"></i></a>
+            <a href="historico.html" class="nav-icon" title="Histórico"><i class="fa-regular fa-clock"></i></a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <hr class="divider" />
+            <button class="nav-icon theme-toggle-btn" id="theme-toggle-sidebar" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                <i class="fa-solid fa-moon icon-moon"></i>
+                <i class="fa-solid fa-sun icon-sun"></i>
+            </button>
+            <a href="perfil.html" class="nav-icon" title="Perfil"><i class="fa-regular fa-user"></i></a>
+            <a href="#" class="nav-icon" id="btn-logout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+            <a href="index.html" class="logo">
+                <img src="/static/img/image 8.png" alt="Logo">
+            </a>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle-btn" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                    <i class="fa-solid fa-moon icon-moon"></i>
+                    <i class="fa-solid fa-sun icon-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="partidas-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h1 class="page-title" style="margin-bottom: 0;">Partidas Disponíveis</h1>
+                <button id="btn-abrir-modal" class="btn-primary">
+                    <i class="fa-solid fa-plus"></i> Criar Partida
+                </button>
+            </div>
+
+            <section class="filter-bar">
+                <div class="sport-pills">
+                    <button class="pill active" data-esporte="Todos">Todos</button>
+                    <button class="pill" data-esporte="Futebol">Futebol</button>
+                    <button class="pill" data-esporte="Futsal">Futsal</button>
+                    <button class="pill" data-esporte="Basquete">Basquete</button>
+                    <button class="pill" data-esporte="Vôlei">Vôlei</button>
+                </div>
+
+                <div class="select-filters">
+                    <div class="select-box">
+                        <label>Data</label>
+                        <select id="filter-data">
+                            <option value="hoje">Hoje</option>
+                            <option value="amanha">Amanhã</option>
+                            <option value="semana">Esta Semana</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+
+                    <div class="select-box">
+                        <label>Localização</label>
+                        <select id="filter-local">
+                            <option value="cotemig">Cotemig</option>
+                            <option value="barroca">Cotemig Barroca</option>
+                            <option value="floresta">Cotemig Floresta</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
+                </div>
+            </section>
+
+            <div class="partidas-content-layout">
+                
+                <section class="cards-grid" id="container-partidas">
+                    <p style="grid-column: 1/-1; color: #64748b;">Carregando partidas...</p>
+                </section>
+
+                <aside class="calendar-widget">
+                    <h3 class="calendar-title">Calendário</h3>
+                    <div class="calendar-header">
+                        <button class="btn-nav"><i class="fa-solid fa-arrow-left"></i></button>
+                        <span class="month-year">Outubro 2026</span>
+                        <button class="btn-nav"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="calendar-grid">
+                        <span class="day-name">D</span>
+                        <span class="day-name">S</span>
+                        <span class="day-name">T</span>
+                        <span class="day-name">Q</span>
+                        <span class="day-name">Q</span>
+                        <span class="day-name">S</span>
+                        <span class="day-name">S</span>
+
+                        <span class="day dimmed">28</span>
+                        <span class="day dimmed">29</span>
+                        <span class="day dimmed">30</span>
+                        <span class="day">1</span>
+                        <span class="day">2</span>
+                        <span class="day">3</span>
+                        <span class="day">4</span>
+
+                        <span class="day">5</span>
+                        <span class="day">6</span>
+                        <span class="day">7</span>
+                        <span class="day">8</span>
+                        <span class="day">9</span>
+                        <span class="day">10</span>
+                        <span class="day">11</span>
+
+                        <span class="day">12</span>
+                        <span class="day">13</span>
+                        <span class="day">14</span>
+                        <span class="day">15</span>
+                        <span class="day">16</span>
+                        <span class="day">17</span>
+                        <span class="day">18</span>
+
+                        <span class="day">19</span>
+                        <span class="day">20</span>
+                        <span class="day">21</span>
+                        <span class="day">22</span>
+                        <span class="day selected">23</span>
+                        <span class="day">24</span>
+                        <span class="day">25</span>
+
+                        <span class="day">26</span>
+                        <span class="day">27</span>
+                        <span class="day">28</span>
+                        <span class="day">29</span>
+                        <span class="day">30</span>
+                        <span class="day">31</span>
+                        <span class="day dimmed">1</span>
+                    </div>
+
+                    <a href="#" class="btn-full-calendar">Ver calendário completo</a>
+                </aside>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Modal para Criar/Editar Partida -->
+    <div id="modal-partida" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-titulo">Criar Nova Partida</h3>
+            <form id="form-partida">
+                <input type="hidden" id="partida-id" />
+
+                <div class="form-group">
+                    <label for="input-esporte">Esporte</label>
+                    <select id="input-esporte" required>
+                        <option value="Futebol">Futebol</option>
+                        <option value="Futsal">Futsal</option>
+                        <option value="Basquete">Basquete</option>
+                        <option value="Vôlei">Vôlei</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-local">Local</label>
+                    <input type="text" id="input-local" placeholder="Ex: Cotemig Barroca" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-data">Data</label>
+                    <input type="date" id="input-data" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-horario">Horário</label>
+                    <input type="text" id="input-horario" placeholder="Ex: 18:00" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-vagas">Vagas</label>
+                    <input type="number" id="input-vagas" min="1" placeholder="Ex: 10" required />
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="btn-cancelar" class="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn-salvar">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Avaliação de Jogadores -->
+    <div id="modal-avaliar" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <h3>Avaliar Jogadores da Partida</h3>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">
+                Dê uma nota de 1 a 5 para os atletas que jogaram com você:
+            </p>
+            
+            <form id="form-avaliacao">
+                <input type="hidden" id="partida-avaliar-id" />
+                <div id="lista-jogadores-avaliar" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem; padding-right: 0.5rem;">
+                    <!-- Lista inserida dinamicamente via JS -->
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="btn-fechar-avaliar" class="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn-salvar">Enviar Avaliações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>

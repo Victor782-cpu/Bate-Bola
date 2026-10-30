@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfil do Jogador - BateBola</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('batebola_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (saved === 'dark' || (!saved && prefersDark)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    const meta = document.getElementById('meta-theme-color');
+                    if (meta) meta.setAttribute('content', '#0b0f19');
+                }
+            } catch(e) {}
+        })();
+    </script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <button class="menu-toggle"><i class="fa-solid fa-xmark"></i></button>
+            <a href="index.html" class="nav-icon active"><i class="fa-solid fa-house"></i></a>
+            <a href="partidas.html" class="nav-icon"><i class="fa-solid fa-futbol"></i></a>
+            <a href="historico.html" class="nav-icon"><i class="fa-regular fa-clock"></i></a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <hr class="divider" />
+            <button class="nav-icon theme-toggle-btn" id="theme-toggle-sidebar" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                <i class="fa-solid fa-moon icon-moon"></i>
+                <i class="fa-solid fa-sun icon-sun"></i>
+            </button>
+            <a href="login.html" class="nav-icon"><i class="fa-regular fa-user"></i></a>
+            <a href="#" class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+
+        <header class="top-header">
+            <div class="header-left">
+                <button class="menu-toggle" id="btn-abrir-menu"><i class="fa-solid fa-bars"></i></button>
+            <a href="index.html" class="logo">
+                <img src="/static/img/image 8.png" alt="Logo">
+            </a>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle-btn" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+                    <i class="fa-solid fa-moon icon-moon"></i>
+                    <i class="fa-solid fa-sun icon-sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="perfil-container">
+            <div class="perfil-content-layout">
+
+                <div class="perfil-left-column">
+
+                    <div class="profile-header-card">
+                        <div class="profile-main-info">
+                            <div class="avatar-container">
+                                <i class="fa-solid fa-user-large avatar-placeholder"></i>
+                            </div>
+
+                            <div class="user-details">
+                                <div class="user-name-row">
+                                    <h2 id="user-display-name">Carregando...</h2>
+                                    <span class="user-handle">@jogador</span>
+                                </div>
+                                <div class="location">
+                                    <span>Belo Horizonte - MG</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button id="btn-abrir-editar-perfil" class="btn-edit-profile">
+                                <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats-card">
+                        <div class="stat-item">
+                            <i class="fa-solid fa-futbol stat-icon"></i>
+                            <span class="stat-number" id="stat-partidas">0</span>
+                            <span class="stat-label">Partidas Criadas</span>
+                        </div>
+
+                        <div class="stat-divider"></div>
+
+                        <div class="stat-item">
+                            <i class="fa-solid fa-circle-check stat-icon text-success"></i>
+                            <span class="stat-number" id="stat-presencas">0</span>
+                            <span class="stat-label">Presenças Confirmadas</span>
+                        </div>
+
+                        <div class="stat-divider"></div>
+
+                        <div class="stat-item">
+                            <i class="fa-solid fa-circle-xmark stat-icon text-danger"></i>
+                            <span class="stat-number" id="stat-faltas">0</span>
+                            <span class="stat-label">Faltas Registadas</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-details-card">
+                        <div class="details-section favorite-sports">
+                            <h3>Esportes Favoritos</h3>
+                            <div class="sports-tags">
+                                <span class="sport-tag"><i class="fa-solid fa-futbol"></i> Futebol</span>
+                                <span class="sport-tag"><i class="fa-solid fa-basketball"></i> Basquete</span>
+                            </div>
+                        </div>
+
+                        <div class="details-divider"></div>
+
+                        <div class="details-section about-section">
+                            <h3>Sobre Mim</h3>
+                            <p id="user-about-text">
+                                Entusiasta de esportes coletivos e organizador de partidas locais.
+                                Sempre buscando reunir a galera para jogar um futebol nos fins de semana e manter uma
+                                rotina saudável!
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="perfil-right-column">
+                    <div class="badge-card">
+                        <div class="badge-icon">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <i class="fa-solid fa-check check-overlay"></i>
+                        </div>
+                        <h3 class="badge-title">Jogador Confiável</h3>
+                        <hr class="badge-divider" />
+
+                        <button id="btn-deletar-perfil" class="btn-danger-outline" title="Excluir Conta">
+                            <i class="fa-solid fa-trash-can"></i> Excluir Conta
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <div id="modal-editar-perfil" class="modal">
+        <div class="modal-content">
+            <h3>Editar Perfil</h3>
+            <form id="form-editar-perfil">
+                <div class="form-group">
+                    <label for="input-edit-foto">Foto de Perfil</label>
+                    <input type="file" id="input-edit-foto" accept="image/*" />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-edit-nome">Nome</label>
+                    <input type="text" id="input-edit-nome" placeholder="Seu nome" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-edit-cidade">Cidade / Estado</label>
+                    <input type="text" id="input-edit-cidade" placeholder="Ex: Belo Horizonte - MG" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-edit-esportes">Esportes Favoritos (separados por vírgula)</label>
+                    <input type="text" id="input-edit-esportes" placeholder="Ex: Futebol, Basquete, Vôlei" />
+                </div>
+
+                <div class="form-group">
+                    <label for="input-edit-sobre">Sobre Mim</label>
+                    <textarea id="input-edit-sobre" rows="4" placeholder="Fale um pouco sobre você..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="btn-cancelar-editar-perfil" class="btn-cancelar">Cancelar</button>
+                    <button type="submit" class="btn-salvar">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>
