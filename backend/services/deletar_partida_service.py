@@ -1,10 +1,13 @@
-from models.partida_model import Partida
+from repository.partida_repository import PartidaRepository
+
 
 class DeletarPartidaService:
-    def executar(self, partida_id):
-        partida = Partida.buscar_por_id(partida_id)
+    def __init__(self, repository=None):
+        self.repository = repository or PartidaRepository()
+
+    def executar(self, partida_id: int) -> bool:
+        partida = self.repository.buscar_por_id(partida_id)
         if partida is None:
             return False
 
-        partida.deletar()
-        return True
+        return self.repository.deletar(partida_id)

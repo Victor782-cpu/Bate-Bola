@@ -7,30 +7,55 @@
   <title>Login / Cadastro - BateBola</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="/static/css/style.css" />
-  <meta name="theme-color" content="#f8f9fa" id="meta-theme-color">
+  <link rel="stylesheet" href="../static/css/style.css" />
+  <meta name="theme-color" content="#ffffff" id="meta-theme-color">
   <script>
       (function() {
           try {
+              const urlParams = new URLSearchParams(window.location.search);
+              const paramTheme = urlParams.get('theme');
+              if (paramTheme === 'light' || paramTheme === 'dark') {
+                  localStorage.setItem('batebola_theme', paramTheme);
+              }
               const saved = localStorage.getItem('batebola_theme');
               const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
               if (saved === 'dark' || (!saved && prefersDark)) {
                   document.documentElement.setAttribute('data-theme', 'dark');
                   const meta = document.getElementById('meta-theme-color');
                   if (meta) meta.setAttribute('content', '#0b0f19');
+              } else {
+                  document.documentElement.removeAttribute('data-theme');
+                  const meta = document.getElementById('meta-theme-color');
+                  if (meta) meta.setAttribute('content', '#ffffff');
               }
           } catch(e) {}
       })();
   </script>
 </head>
 
-<body>
+<body class="login-body">
 
-  <aside class="sidebar">
+  <!-- Sidebar Lateral Fixa (Referência do mockup) -->
+  <aside class="sidebar" aria-label="Navegação Lateral">
     <div class="sidebar-top">
-      <button class="menu-toggle"><i class="fa-solid fa-xmark"></i></button>
-      <a href="index.html" class="nav-icon" title="Início"><i class="fa-solid fa-house"></i></a>
-      <a href="partidas.html" class="nav-icon" title="Partidas"><i class="fa-solid fa-futbol"></i></a>
-      <a href="historico.html" class="nav-icon" title="Histórico"><i class="fa-regular fa-clock"></i></a>
+      <a href="index.html" class="sidebar-logo" title="BateBola">
+        <img src="/static/img/image 8.png" onerror="if(this.src!=='../static/img/image 8.png')this.src='../static/img/image 8.png'" alt="Logo BateBola" />
+      </a>
+      <a href="index.html" class="nav-icon" title="Início">
+        <i class="fa-solid fa-house"></i>
+      </a>
+      <a href="partidas.html" class="nav-icon" title="Partidas">
+        <svg class="sidebar-pitch-icon" viewBox="0 0 24 16" width="20" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="1" width="22" height="14" rx="2"></rect>
+          <line x1="12" y1="1" x2="12" y2="15"></line>
+          <circle cx="12" cy="8" r="2.8"></circle>
+          <path d="M 1 4 h 3.5 v 8 h -3.5"></path>
+          <path d="M 23 4 h -3.5 v 8 h 3.5"></path>
+        </svg>
+      </a>
+      <a href="historico.html" class="nav-icon" title="Histórico">
+        <i class="fa-regular fa-clock"></i>
+      </a>
     </div>
 
     <div class="sidebar-bottom">
@@ -39,83 +64,149 @@
         <i class="fa-solid fa-moon icon-moon"></i>
         <i class="fa-solid fa-sun icon-sun"></i>
       </button>
-      <a href="perfil.html" class="nav-icon" title="Perfil"><i class="fa-regular fa-user"></i></a>
-      <a href="#" class="nav-icon" id="btn-logout" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></a>
+      <a href="login.html" class="nav-icon active" title="Login / Perfil">
+        <i class="fa-regular fa-user"></i>
+      </a>
+      <a href="#" class="nav-icon" id="btn-logout" title="Sair">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
     </div>
   </aside>
 
-  <div class="main-content">
+  <main class="login-container">
 
-    <header class="top-header">
-      <div class="header-left">
-        <button class="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-        <a href="index.html" class="logo">
-          <img src="/static/img/image 8.png" alt="Logo">
-        </a>
+    <section class="login-content">
+
+      <button class="menu-toggle login-mobile-toggle" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <button class="theme-toggle-btn login-theme-toggle" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
+        <i class="fa-solid fa-moon icon-moon"></i>
+        <i class="fa-solid fa-sun icon-sun"></i>
+      </button>
+
+      <form id="form-login" class="login-form" autocomplete="on">
+        <div class="input-group">
+          <input type="email" id="login-email" name="email" placeholder="e-mail" required autocomplete="email" />
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="login-senha" name="password" placeholder="senha" required autocomplete="current-password" />
+        </div>
+
+        <a href="#" class="forgot-password-link" id="link-esqueci-senha">Esqueceu sua senha?</a>
+
+        <button type="submit" class="btn-primary btn-entrar">ENTRAR</button>
+
+        <p class="auth-switch-text">
+          Não tem uma conta? <a href="#" id="link-ir-cadastro">Cadastre-se</a>
+        </p>
+      </form>
+
+      <form id="form-cadastro" class="login-form" style="display: none;" autocomplete="on">
+        <h2 class="login-form-title">Criar Conta</h2>
+
+        <div class="input-group">
+          <input type="text" id="cad-nome" placeholder="nome completo" required autocomplete="name" />
+        </div>
+
+        <div class="input-group">
+          <input type="email" id="cad-email" placeholder="e-mail" required autocomplete="email" />
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="cad-cidade" placeholder="cidade / estado (ex: São Paulo - SP)" required />
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="cad-senha" placeholder="senha" required autocomplete="new-password" />
+        </div>
+
+        <button type="submit" class="btn-primary btn-entrar">CADASTRAR</button>
+
+        <p class="auth-switch-text">
+          Já tem uma conta? <a href="#" id="link-ir-login">Faça Login</a>
+        </p>
+      </form>
+
+    </section>
+
+    <section class="login-banner" aria-label="Banner ilustrativo de esportes"></section>
+
+  </main>
+
+  <div class="modal" id="modal-esqueci-senha" role="dialog" aria-modal="true" aria-labelledby="modal-esqueci-title">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 id="modal-esqueci-title" style="margin: 0; font-size: 1.25rem;">Recuperar Senha</h3>
+        <button type="button" id="btn-fechar-modal-senha" aria-label="Fechar modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
       </div>
-      <div class="header-right">
-        <button class="theme-toggle-btn" id="theme-toggle-header" type="button" aria-label="Alternar modo escuro" title="Alternar modo escuro">
-          <i class="fa-solid fa-moon icon-moon"></i>
-          <i class="fa-solid fa-sun icon-sun"></i>
-        </button>
-      </div>
-    </header>
-
-    <div class="login-wrapper">
-      <main class="login-card">
-
-        <form id="form-login" class="login-form">
-          <h2 class="login-title">Acesse sua Conta</h2>
-
-          <div class="input-group">
-            <input type="email" id="login-email" placeholder="e-mail" required />
-          </div>
-
-          <div class="input-group">
-            <input type="password" id="login-senha" placeholder="senha" required />
-          </div>
-
-          <button type="submit" class="btn-primary">ENTRAR</button>
-
-          <p class="auth-switch-text">
-            Não tem uma conta? <a href="#" id="link-ir-cadastro">Cadastre-se</a>
-          </p>
-        </form>
-
-        <form id="form-cadastro" class="login-form" style="display: none;">
-          <h2 class="login-title">Criar Conta</h2>
-
-          <div class="input-group">
-            <input type="text" id="cad-nome" placeholder="nome completo" required />
-          </div>
-
-          <div class="input-group">
-            <input type="email" id="cad-email" placeholder="e-mail" required />
-          </div>
-
-          <div class="input-group">
-            <input type="text" id="cad-cidade" placeholder="cidade / estado (ex: São Paulo - SP)" required />
-          </div>
-
-          <div class="input-group">
-            <input type="password" id="cad-senha" placeholder="senha" required />
-          </div>
-
-          <button type="submit" class="btn-primary">CADASTRAR</button>
-
-          <p class="auth-switch-text">
-            Já tem uma conta? <a href="#" id="link-ir-login">Faça Login</a>
-          </p>
-        </form>
-
-      </main>
-
-      <div class="login-banner"></div>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.2rem; line-height: 1.5;">
+        Digite seu e-mail cadastrado para receber instruções de recuperação de senha.
+      </p>
+      <form id="form-recuperar-senha">
+        <div class="input-group">
+          <input type="email" id="recuperar-email" placeholder="seu-email@exemplo.com" required />
+        </div>
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+          <button type="button" id="btn-cancelar-recuperacao" class="btn-secondary" style="flex: 1; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-hover); color: var(--text-primary); cursor: pointer; font-weight: 600;">Cancelar</button>
+          <button type="submit" class="btn-primary btn-entrar" style="flex: 1; padding: 0.75rem; margin-top: 0;">Enviar</button>
+        </div>
+      </form>
     </div>
-
   </div>
 
   <script src="/static/js/script.js"></script>
+  <script>
+    if (typeof API_URL === 'undefined') {
+      const s = document.createElement('script');
+      s.src = '../static/js/script.js';
+      document.body.appendChild(s);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const linkEsqueci = document.getElementById("link-esqueci-senha");
+      const modalEsqueci = document.getElementById("modal-esqueci-senha");
+      const btnFechar = document.getElementById("btn-fechar-modal-senha");
+      const btnCancelar = document.getElementById("btn-cancelar-recuperacao");
+      const formRecuperar = document.getElementById("form-recuperar-senha");
+
+      function abrirModal() {
+        if (modalEsqueci) modalEsqueci.classList.add("active");
+      }
+
+      function fecharModal() {
+        if (modalEsqueci) modalEsqueci.classList.remove("active");
+      }
+
+      if (linkEsqueci) {
+        linkEsqueci.addEventListener("click", (e) => {
+          e.preventDefault();
+          abrirModal();
+        });
+      }
+
+      if (btnFechar) btnFechar.addEventListener("click", fecharModal);
+      if (btnCancelar) btnCancelar.addEventListener("click", fecharModal);
+
+      if (modalEsqueci) {
+        modalEsqueci.addEventListener("click", (e) => {
+          if (e.target === modalEsqueci) fecharModal();
+        });
+      }
+
+      if (formRecuperar) {
+        formRecuperar.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const email = document.getElementById("recuperar-email")?.value;
+          alert(`Instruções de redefinição enviadas para ${email}!`);
+          fecharModal();
+          formRecuperar.reset();
+        });
+      }
+    });
+  </script>
 </body>
 
 </html>

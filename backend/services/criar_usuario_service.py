@@ -1,8 +1,11 @@
-from models.usuario_model import Usuario
+from repository.usuario_repository import UsuarioRepository
+
 
 class CriarUsuarioService:
-    @staticmethod
-    def executar(dados):
+    def __init__(self, repository=None):
+        self.repository = repository or UsuarioRepository()
+
+    def executar(self, dados: dict):
         email = dados.get("email")
         senha = dados.get("senha")
         cidade = dados.get("cidade", "").strip() or "Belo Horizonte - MG"
@@ -10,19 +13,16 @@ class CriarUsuarioService:
         if not email or not senha:
             return {"erro": "E-mail e senha são obrigatórios"}, 400
 
-        usuario_existente = Usuario.buscar_por_email(email)
-
+        usuario_existente = self.repository.buscar_por_email(email)
         if usuario_existente:
             return {"erro": "E-mail já cadastrado"}, 400
 
-        novo_usuario = Usuario(
-            nome=dados.get("nome", "Novo Jogador"),
-            email=email,
-            senha_hash=senha,
-            cidade=cidade,
-            ativo=True
-        )
+        novo_usuario = self.repository.criar({
+            "nome": dados.get("nome", "Novo Jogador"),
+            "email": email,
+            "senha": senha,
+            "cidade": cidade,
+            "ativo": True
+        })
 
-        novo_usuario.salvar()
-
-        return novo_usuario.to_dict(), 201
+        return novo_usuario, 201

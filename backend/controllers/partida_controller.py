@@ -1,269 +1,226 @@
 from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import SQLAlchemyError
-
-from services.criar_partida_service import CriarPartidaService
-from services.listar_partida_service import ListarPartidasService
-from services.buscar_partida_service import BuscarPartidaPorIdService
+from repository.partida_repository import PartidaRepository
+from repository.usuario_repository import UsuarioRepository
 from services.atualizar_partida_service import AtualizarPartidaService
+from services.buscar_partida_service import BuscarPartidaPorIdService
+from services.criar_partida_service import CriarPartidaService
 from services.deletar_partida_service import DeletarPartidaService
 from services.filtrar_partida_esporte_service import FiltrarPartidaPorEsporteService
-from models.usuario_model import Usuario
-from models.partida_model import Partida
-from models.participante_model import PartidaParticipante
-from models.avaliacao_model import Avaliacao
-from models.database import db
+from services.listar_partida_service import ListarPartidasService
+
+
+class PartidaController:
+
+    def __init__(
+        self,
+        service_criar=None,
+        service_listar=None,
+        service_buscar=None,
+        service_atualizar=None,
+        service_deletar=None,
+        service_filtrar=None,
+        partida_repository=None,
+        usuario_repository=None,
+    ):
+        self.partida_repo = partida_repository or PartidaRepository()
+        self.usuario_repo = usuario_repository or UsuarioRepository()
+        self.service_criar = service_criar or CriarPartidaService(self.partida_repo)
+        self.service_listar = service_listar or ListarPartidasService(self.partida_repo)
+        self.service_buscar = service_buscar or BuscarPartidaPorIdService(self.partida_repo)
+        self.service_atualizar = service_atualizar or AtualizarPartidaService(self.partida_repo)
+        self.service_deletar = service_deletar or DeletarPartidaService(self.partida_repo)
+        self.service_filtrar = service_filtrar or FiltrarPartidaPorEsporteService(self.partida_repo)
+
+    def criar_partida(self):
+        try:
+            dados = request.get_json() or {}
+            partida = self.service_criar.executar(dados)
+
+            usuario_id = dados.get("usuario_id")
+            if usuario_id:
+                self.usuario_repo.incrementar_partidas(usuario_id, 1)
+
+            return jsonify(partida), 201
+        except ValueError as erro:
+            return jsonify({"erro": str(erro)}), 400
+        except Exception as e:
+            return jsonify({"erro": f"Erro interno: {str(e)}"}), 500
+
+    def listar_partidas(self):
+        try:
+            partidas = self.service_listar.executar()
+            return jsonify(partidas), 200
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao listar partidas: {str(e)}"}), 500
+
+    def buscar_por_esporte(self):
+        try:
+            esporte = request.args.get("esporte", "Todos")
+            partidas = self.service_filtrar.executar(esporte)
+            return jsonify(partidas), 200
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao filtrar por esporte: {str(e)}"}), 500
+
+    def buscar_partida_por_id(self, partida_id: int):
+        partida = self.service_buscar.executar(partida_id)
+        if partida is None:
+            return jsonify({"erro": "Partida não encontrada."}), 404
+        return jsonify(partida), 200
+
+    def atualizar_partida(self, partida_id: int):
+        try:
+            dados = request.get_json() or {}
+            usuario_logado_id = dados.get("usuario_id")
+
+            partida_existente = self.service_buscar.executar(partida_id)
+            if partida_existente is None:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+
+            dono_id = partida_existente.get("usuario_id")
+            if dono_id and usuario_logado_id and int(dono_id) != int(usuario_logado_id):
+                return jsonify({"erro": "Você não tem permissão para editar esta partida."}), 403
+
+            partida_atualizada = self.service_atualizar.executar(partida_id, dados)
+            return jsonify(partida_atualizada), 200
+        except ValueError as erro:
+            return jsonify({"erro": str(erro)}), 400
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao atualizar partida: {str(e)}"}), 500
+
+    def deletar_partida(self, partida_id: int):
+        try:
+            usuario_logado_id = request.args.get("usuario_id", type=int)
+
+            partida_existente = self.service_buscar.executar(partida_id)
+            if partida_existente is None:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+
+            dono_id = partida_existente.get("usuario_id")
+            if dono_id and usuario_logado_id and int(dono_id) != int(usuario_logado_id):
+                return jsonify({"erro": "Você não tem permissão para excluir esta partida."}), 403
+
+            deletado = self.service_deletar.executar(partida_id)
+            if not deletado:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+            return "", 204
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao deletar partida: {str(e)}"}), 500
+
+    def participar_partida(self, partida_id: int):
+        try:
+            dados = request.get_json() or {}
+            usuario_id = dados.get("usuario_id")
+
+            if not usuario_id:
+                return jsonify({"erro": "ID do usuário é obrigatório para participar."}), 400
+
+            partida = self.service_buscar.executar(partida_id)
+            if not partida:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+
+            usuario = self.usuario_repo.buscar_por_id(usuario_id)
+            if not usuario:
+                return jsonify({"erro": "Usuário não encontrado."}), 404
+
+            if self.partida_repo.verificar_participacao(partida_id, usuario_id):
+                return jsonify({"erro": "Você já está participando desta partida."}), 400
+
+            vagas_ocupadas = len(partida.get("participantes", []))
+            if vagas_ocupadas >= partida.get("vagas", 0):
+                return jsonify({"erro": "Esta partida já atingiu o limite de vagas."}), 400
+
+            self.partida_repo.adicionar_participante(partida_id, usuario_id)
+            self.usuario_repo.incrementar_partidas(usuario_id, 1)
+
+            return jsonify({"mensagem": "Participação confirmada com sucesso!"}), 200
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao participar da partida: {str(e)}"}), 500
+
+    def cancelar_participacao(self, partida_id: int):
+        try:
+            dados = request.get_json() or {}
+            usuario_id = dados.get("usuario_id")
+
+            if not usuario_id:
+                return jsonify({"erro": "ID do usuário é obrigatório para cancelar participação."}), 400
+
+            partida = self.service_buscar.executar(partida_id)
+            if not partida:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+
+            if not self.partida_repo.verificar_participacao(partida_id, usuario_id):
+                return jsonify({"erro": "Você não está inscrito nesta partida."}), 400
+
+            self.partida_repo.remover_participante(partida_id, usuario_id)
+            self.usuario_repo.incrementar_partidas(usuario_id, -1)
+
+            return jsonify({"mensagem": "Participação cancelada com sucesso."}), 200
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao cancelar participação: {str(e)}"}), 500
+
+    def avaliar_jogador(self, partida_id: int):
+        try:
+            dados = request.get_json() or {}
+            avaliador_id = dados.get("avaliador_id")
+            avaliado_id = dados.get("avaliado_id")
+            nota = dados.get("nota")
+
+            if not avaliador_id or not avaliado_id or nota is None:
+                return jsonify({"erro": "avaliador_id, avaliado_id e nota são obrigatórios."}), 400
+
+            try:
+                nota = int(nota)
+                if nota < 1 or nota > 5:
+                    raise ValueError()
+            except ValueError:
+                return jsonify({"erro": "A nota deve ser um número inteiro entre 1 e 5."}), 400
+
+            if int(avaliador_id) == int(avaliado_id):
+                return jsonify({"erro": "Você não pode avaliar a si mesmo."}), 400
+
+            partida = self.service_buscar.executar(partida_id)
+            if not partida:
+                return jsonify({"erro": "Partida não encontrada."}), 404
+
+            avaliador = self.usuario_repo.buscar_por_id(avaliador_id)
+            avaliado = self.usuario_repo.buscar_por_id(avaliado_id)
+            if not avaliador or not avaliado:
+                return jsonify({"erro": "Avaliador ou jogador avaliado não encontrado."}), 404
+
+            ids_participantes = {p["id"] for p in partida.get("participantes", [])}
+            if partida.get("usuario_id"):
+                ids_participantes.add(partida["usuario_id"])
+
+            if int(avaliador_id) not in ids_participantes or int(avaliado_id) not in ids_participantes:
+                return jsonify({"erro": "Ambos os jogadores precisam fazer parte desta partida."}), 400
+
+            if self.partida_repo.verificar_avaliacao(partida_id, avaliador_id, avaliado_id):
+                return jsonify({"erro": "Você já avaliou este jogador nesta partida."}), 400
+
+            self.partida_repo.salvar_avaliacao(partida_id, avaliador_id, avaliado_id, nota)
+
+            if nota >= 3:
+                presencas_atuais = avaliado.get("presencas") or 0
+                self.usuario_repo.atualizar(avaliado_id, {"presencas": presencas_atuais + 1})
+            else:
+                faltas_atuais = avaliado.get("faltas") or 0
+                self.usuario_repo.atualizar(avaliado_id, {"faltas": faltas_atuais + 1})
+
+            return jsonify({"mensagem": "Avaliação registrada com sucesso!"}), 200
+        except Exception as e:
+            return jsonify({"erro": f"Erro ao registrar avaliação: {str(e)}"}), 500
+
+
 
 partida_controller = Blueprint("partida_controller", __name__)
+_controller = PartidaController()
 
-@partida_controller.post("/partidas")
-def criar_partida():
-    try:
-        dados = request.get_json() or {}
-        service = CriarPartidaService()
-        partida = service.executar(dados)
-        
-        usuario_id = dados.get("usuario_id")
-        if usuario_id:
-            usuario = Usuario.buscar_por_id(usuario_id)
-            if usuario:
-                usuario.partidas_jogadas = (usuario.partidas_jogadas or 0) + 1
-                db.session.commit()
-
-        return jsonify(partida), 201
-    except ValueError as erro:
-        return jsonify({"erro": str(erro)}), 400
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"erro": f"Erro no banco de dados: {str(e)}"}), 500
-
-@partida_controller.post("/partidas/<int:partida_id>/participar")
-def participar_partida(partida_id):
-    try:
-        dados = request.get_json() or {}
-        usuario_id = dados.get("usuario_id")
-        
-        if not usuario_id:
-            return jsonify({"erro": "ID do usuário é obrigatório para participar."}), 400
-
-        partida = Partida.buscar_por_id(partida_id)
-        if not partida:
-            return jsonify({"erro": "Partida não encontrada."}), 404
-
-        usuario = Usuario.buscar_por_id(usuario_id)
-        if not usuario:
-            return jsonify({"erro": "Usuário não encontrado."}), 404
-
-        inscricao_existente = PartidaParticipante.query.filter_by(
-            partida_id=partida_id, usuario_id=usuario_id
-        ).first()
-
-        if inscricao_existente:
-            return jsonify({
-                "mensagem": "Você já está inscrito nesta partida!",
-                "vagas": partida.vagas,
-                "partida": partida.to_dict()
-            }), 200
-
-
-        if partida.vagas is not None and partida.vagas <= 0:
-            return jsonify({"erro": "Não há mais vagas disponíveis nesta partida."}), 400
-
-
-        nova_inscricao = PartidaParticipante(partida_id=partida_id, usuario_id=usuario_id)
-        db.session.add(nova_inscricao)
-
-
-        if partida.vagas is not None:
-            partida.vagas = max(0, partida.vagas - 1)
-
-
-        usuario.presencas = (usuario.presencas or 0) + 1
-
-        db.session.commit()
-
-        return jsonify({
-            "mensagem": "Inscrição realizada com sucesso!",
-            "vagas": partida.vagas,
-            "partida": partida.to_dict()
-        }), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"erro": f"Erro ao participar: {str(e)}"}), 500
-
-@partida_controller.post("/partidas/<int:partida_id>/cancelar-participacao")
-def cancelar_participacao(partida_id):
-    try:
-        dados = request.get_json() or {}
-        usuario_id = dados.get("usuario_id")
-        
-        if not usuario_id:
-            return jsonify({"erro": "ID do usuário é obrigatório."}), 400
-
-        partida = Partida.buscar_por_id(partida_id)
-        if not partida:
-            return jsonify({"erro": "Partida não encontrada."}), 404
-
-        usuario = Usuario.buscar_por_id(usuario_id)
-        inscricao = PartidaParticipante.query.filter_by(
-            partida_id=partida_id, usuario_id=usuario_id
-        ).first()
-
-        if inscricao:
-            db.session.delete(inscricao)
-
-
-            if partida.vagas is not None:
-                partida.vagas = partida.vagas + 1
-
-            if usuario:
-                usuario.faltas = (usuario.faltas or 0) + 1
-                if usuario.presencas and usuario.presencas > 0:
-                    usuario.presencas -= 1
-
-            db.session.commit()
-
-            return jsonify({
-                "mensagem": "Inscrição cancelada com sucesso!",
-                "vagas": partida.vagas,
-                "partida": partida.to_dict()
-            }), 200
-        else:
-            return jsonify({
-                "mensagem": "Você não estava inscrito nesta partida.",
-                "vagas": partida.vagas,
-                "partida": partida.to_dict()
-            }), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"erro": f"Erro ao cancelar participação: {str(e)}"}), 500
-
-@partida_controller.post("/usuarios/<int:usuario_id>/avaliar")
-def avaliar_usuario(usuario_id):
-    try:
-        dados = request.get_json() or {}
-        try:
-            nota = int(dados.get("nota", 0))
-            avaliador_id = int(dados.get("avaliador_id", 0))
-            partida_id = int(dados.get("partida_id", 0))
-        except (TypeError, ValueError):
-            return jsonify({"erro": "Nota, avaliador e partida são obrigatórios."}), 400
-
-        if nota < 1 or nota > 5:
-            return jsonify({"erro": "A nota deve ser entre 1 e 5."}), 400
-
-        if avaliador_id == usuario_id:
-            return jsonify({"erro": "Não é possível avaliar a si mesmo."}), 400
-
-        avaliador = Usuario.buscar_por_id(avaliador_id)
-        avaliado = Usuario.buscar_por_id(usuario_id)
-        partida = Partida.buscar_por_id(partida_id)
-        if not avaliador or not avaliado or not partida:
-            return jsonify({"erro": "Jogador ou partida não encontrado."}), 404
-
-        avaliador_inscrito = PartidaParticipante.query.filter_by(
-            partida_id=partida_id, usuario_id=avaliador_id
-        ).first()
-        avaliado_inscrito = PartidaParticipante.query.filter_by(
-            partida_id=partida_id, usuario_id=usuario_id
-        ).first()
-        if (avaliador_id != partida.usuario_id and not avaliador_inscrito) or not avaliado_inscrito:
-            return jsonify({"erro": "A avaliação deve ser feita entre jogadores da partida."}), 403
-
-        existente = Avaliacao.query.filter_by(
-            partida_id=partida_id,
-            avaliador_id=avaliador_id,
-            avaliado_id=usuario_id
-        ).first()
-        if existente:
-            return jsonify({"erro": "Você já avaliou este jogador nesta partida."}), 409
-
-        db.session.add(Avaliacao(
-            partida_id=partida_id,
-            avaliador_id=avaliador_id,
-            avaliado_id=usuario_id,
-            nota=nota
-        ))
-        db.session.commit()
-        return jsonify({"mensagem": "Avaliação registrada com sucesso!"}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"erro": str(e)}), 500
-
-@partida_controller.get("/partidas")
-def listar_partidas():
-    service = ListarPartidasService()
-    partidas = service.executar()
-    return jsonify(partidas), 200
-
-@partida_controller.get("/partidas/por-esporte")
-def buscar_por_esporte():
-    try:
-        esporte = request.args.get("esporte", "Todos")
-        service = FiltrarPartidaPorEsporteService()
-        partidas = service.executar(esporte)
-
-        resultado = [
-            p.to_dict() if hasattr(p, "to_dict") else p 
-            for p in partidas
-        ]
-        
-        return jsonify(resultado), 200
-    except Exception as e:
-        return jsonify({"erro": f"Erro ao executar busca por esporte: {str(e)}"}), 500
-
-@partida_controller.get("/partidas/<int:partida_id>")
-def buscar_partida_por_id(partida_id):
-    service = BuscarPartidaPorIdService()
-    partida = service.executar(partida_id)
-    if partida is None:
-        return jsonify({"erro": "Partida não encontrada."}), 404
-    return jsonify(partida), 200
-
-@partida_controller.put("/partidas/<int:partida_id>")
-def atualizar_partida(partida_id):
-    try:
-        dados = request.get_json() or {}
-        usuario_logado_id = dados.get("usuario_id")
-
-        service_buscar = BuscarPartidaPorIdService()
-        partida_existente = service_buscar.executar(partida_id)
-
-        if partida_existente is None:
-            return jsonify({"erro": "Partida não encontrada."}), 404
-
-        dono_id = partida_existente.get("usuario_id") if isinstance(partida_existente, dict) else getattr(partida_existente, "usuario_id", None)
-        if dono_id and usuario_logado_id and int(dono_id) != int(usuario_logado_id):
-            return jsonify({"erro": "Você não tem permissão para editar esta partida."}), 403
-
-        service = AtualizarPartidaService()
-        partida_atualizada = service.executar(partida_id, dados)
-        return jsonify(partida_atualizada), 200
-    except ValueError as erro:
-        return jsonify({"erro": str(erro)}), 400
-    except SQLAlchemyError:
-        db.session.rollback()
-        return jsonify({"erro": "Erro ao atualizar partida."}), 500
-
-@partida_controller.delete("/partidas/<int:partida_id>")
-def deletar_partida(partida_id):
-    try:
-        usuario_logado_id = request.args.get("usuario_id", type=int)
-
-        service_buscar = BuscarPartidaPorIdService()
-        partida_existente = service_buscar.executar(partida_id)
-
-        if partida_existente is None:
-            return jsonify({"erro": "Partida não encontrada."}), 404
-
-        dono_id = partida_existente.get("usuario_id") if isinstance(partida_existente, dict) else getattr(partida_existente, "usuario_id", None)
-        if dono_id and usuario_logado_id and int(dono_id) != int(usuario_logado_id):
-            return jsonify({"erro": "Você não tem permissão para excluir esta partida."}), 403
-
-        service = DeletarPartidaService()
-        deletado = service.executar(partida_id)
-        if not deletado:
-            return jsonify({"erro": "Partida não encontrada."}), 404
-        return "", 204
-    except SQLAlchemyError:
-        db.session.rollback()
-        return jsonify({"erro": "Erro ao deletar partida."}), 500
+partida_controller.add_url_rule("/partidas", view_func=_controller.criar_partida, methods=["POST"])
+partida_controller.add_url_rule("/partidas", view_func=_controller.listar_partidas, methods=["GET"])
+partida_controller.add_url_rule("/partidas/por-esporte", view_func=_controller.buscar_por_esporte, methods=["GET"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>", view_func=_controller.buscar_partida_por_id, methods=["GET"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>", view_func=_controller.atualizar_partida, methods=["PUT"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>", view_func=_controller.deletar_partida, methods=["DELETE"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>/participar", view_func=_controller.participar_partida, methods=["POST"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>/cancelar-participacao", view_func=_controller.cancelar_participacao, methods=["POST"])
+partida_controller.add_url_rule("/partidas/<int:partida_id>/avaliar", view_func=_controller.avaliar_jogador, methods=["POST"])

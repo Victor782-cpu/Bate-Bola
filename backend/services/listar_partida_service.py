@@ -1,6 +1,9 @@
-from models.partida_model import Partida
+from repository.partida_repository import PartidaRepository
+
 
 class ListarPartidasService:
+    def __init__(self, repository=None):
+        self.repository = repository or PartidaRepository()
+
     def executar(self):
-        partidas = Partida.listar_todas()
-        return [partida.to_dict() for partida in partidas]
+        return self.repository.listar_todas()
